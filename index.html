@@ -1,0 +1,551 @@
+<!doctype html><html lang="de"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Shoppy Cookie-Labor</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+/* Layout: a fake browser (shop + three other sites) on the left, the "Spähfix-Monitor" on the right; stacks on phones.
+   Deliberately one light look: it imitates a real shop window, so it sets every colour explicitly. */
+:root {
+  --bg: #F6EFE4;        /* page around the browser */
+  --paper: #FFFDF8;     /* site surfaces */
+  --ink: #2B1A0E;       /* main text */
+  --ink-soft: #6B5646;  /* secondary text */
+  --line: #E4D6C3;
+  --chrome: #E9DFD1;    /* browser frame */
+  --orange: #E07A1F;    /* Shoppy brand */
+  --orange-dk: #A9530C;
+  --spy: #C8453F;       /* Spähfix */
+  --spy-bg: #FBE6E3;
+  --safe: #2E7D3A;
+  --safe-bg: #E3F2E5;
+  --blue: #2E6DB4;
+  --blue-bg: #E6EEF9;
+  --trick-green: #22B04B;
+  --display: 'Fredoka', 'Trebuchet MS', Verdana, sans-serif;
+  --body: 'Nunito', Verdana, Tahoma, sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--bg); color: var(--ink); }
+body { font-family: var(--body); font-size: 16px; line-height: 1.45;
+  padding-block: 20px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+button { font: inherit; cursor: pointer; }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+.wrap { max-width: 1240px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+
+/* Lesson bar */
+.lesson { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
+.lesson h1 { font-family: var(--display); font-weight: 700; font-size: 28px; margin: 0; letter-spacing: .2px; }
+.lesson h1 span { color: var(--orange-dk); }
+.lesson p { margin: 0; color: var(--ink-soft); max-width: 60ch; }
+.modes { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-left: auto; }
+.modes .lbl { font-size: 13px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--ink-soft); }
+.seg { display: inline-flex; background: var(--paper); border: 2px solid var(--line); border-radius: 999px; padding: 3px; }
+.seg button { border: 0; background: transparent; padding: 7px 14px; border-radius: 999px; font-weight: 700; color: var(--ink-soft); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.reset { border: 2px solid var(--ink); background: var(--paper); color: var(--ink); border-radius: 999px; padding: 7px 16px; font-weight: 800; }
+
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 20px; align-items: start; }
+.grid.solo { grid-template-columns: minmax(0, 1fr); }
+/* Verdeckt-Modus: Monitor aus, keine Hinweise auf Tracking */
+.stealth .lesson p, .stealth .explain, .stealth .ad .why, .stealth .spytag { display: none; }
+.stealth .ad.targeted { border-color: #CDBBA4; background: #FFF8EE; }
+.eyebtn { background: var(--ink); color: var(--paper); display: inline-flex; align-items: center; gap: 8px; }
+.eyebtn[aria-pressed="false"] { background: var(--spy); border-color: var(--spy); color: #FFFFFF; }
+.eyebtn svg { flex: none; }
+.eyebtn kbd { font: inherit; font-size: 11px; opacity: .75; border: 1px solid currentColor; border-radius: 6px; padding: 0 5px; }
+@media (max-width: 900px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* Browser */
+.browser { background: var(--chrome); border-radius: 16px; overflow: hidden; border: 1px solid #D7C8B4; min-width: 0; }
+.tabs { display: flex; gap: 4px; padding: 10px 10px 0; overflow-x: auto; }
+.tab { border: 0; background: transparent; padding: 8px 14px; border-radius: 10px 10px 0 0; font-weight: 700; color: var(--ink-soft); white-space: nowrap; display: flex; gap: 6px; align-items: center; }
+.tab[aria-selected="true"] { background: var(--paper); color: var(--ink); }
+.tab .dot { width: 10px; height: 10px; border-radius: 50%; }
+.urlbar { display: flex; align-items: center; gap: 10px; background: var(--paper); padding: 8px 12px; border-bottom: 1px solid var(--line); }
+.url { flex: 1; min-width: 0; background: #F1E9DD; border-radius: 999px; padding: 6px 14px; font-size: 14px; color: var(--ink-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gear { border: 1px solid var(--line); background: var(--paper); border-radius: 999px; padding: 5px 12px; font-size: 13px; font-weight: 700; color: var(--ink); white-space: nowrap; }
+.viewport { position: relative; background: var(--paper); min-height: 560px; }
+.site { padding: 20px; }
+.site[hidden] { display: none; }
+
+/* Shoppy */
+.shop-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 16px; }
+.logo { font-family: var(--display); font-weight: 700; font-size: 30px; color: var(--orange); }
+.logo small { font-family: var(--body); font-size: 14px; color: var(--ink-soft); font-weight: 600; margin-left: 8px; }
+.cartpill { background: var(--ink); color: var(--paper); border-radius: 999px; padding: 4px 12px; font-weight: 700; font-size: 14px; }
+.boards { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px; }
+.board { border: 2px solid var(--line); border-radius: 14px; padding: 14px; background: #FFFFFF; display: flex; flex-direction: column; gap: 8px; text-align: left; color: var(--ink); transition: transform .15s, border-color .15s; }
+.board:hover { transform: translateY(-2px); border-color: var(--orange); }
+.board.seen { border-color: var(--orange); }
+.deck { position: relative; height: 54px; border-radius: 30px; margin: 6px 4px 14px; }
+.deck::before, .deck::after { content: ""; position: absolute; bottom: -12px; width: 18px; height: 18px; border-radius: 50%; background: #3A3A3A; box-shadow: inset 0 0 0 5px #C9C9C9; }
+.deck::before { left: 22%; } .deck::after { right: 22%; }
+.board b { font-family: var(--display); font-weight: 600; font-size: 18px; }
+.board .price { font-weight: 800; color: var(--orange-dk); font-variant-numeric: tabular-nums; }
+.board .hint { font-size: 13px; color: var(--ink-soft); }
+.shop-foot { margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; color: var(--ink-soft); }
+.linkbtn { border: 0; background: none; padding: 0; color: var(--blue); text-decoration: underline; font-size: 13px; }
+
+/* Other sites */
+.site h2 { font-family: var(--display); font-weight: 600; font-size: 26px; margin: 0 0 4px; }
+.site .sub { color: var(--ink-soft); margin: 0 0 16px; }
+.split { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 18px; }
+@media (max-width: 640px) { .split { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: #FFFFFF; border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+.weather { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.temp { font-family: var(--display); font-size: 56px; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; }
+select { font: inherit; padding: 6px 10px; border-radius: 10px; border: 2px solid var(--line); background: #FFFFFF; color: var(--ink); }
+.forecast { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; font-variant-numeric: tabular-nums; }
+.forecast div { background: var(--blue-bg); border-radius: 10px; padding: 8px; text-align: center; font-weight: 700; }
+.forecast small { display: block; font-weight: 600; color: var(--ink-soft); }
+.games, .videos { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.tile { border: 0; border-radius: 12px; padding: 14px; min-height: 96px; color: #FFFFFF; font-weight: 800; text-align: left; display: flex; align-items: flex-end; font-size: 16px; }
+.tile.on { outline: 3px solid var(--ink); outline-offset: 2px; }
+.tile.game { flex-direction: column; align-items: stretch; justify-content: space-between; gap: 10px; min-height: 150px; transition: transform .15s; }
+.tile.game:hover { transform: translateY(-2px); }
+.tile.game svg { width: 100%; height: 86px; display: block; background: rgba(255,255,255,.16); border-radius: 10px; }
+
+/* Ad slot */
+.ad { border: 2px dashed #CDBBA4; border-radius: 14px; padding: 14px; background: #FFF8EE; display: flex; flex-direction: column; gap: 8px; }
+.ad .tag { font-size: 11px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-soft); }
+.ad.targeted { border-color: var(--spy); background: var(--spy-bg); }
+.ad strong { font-family: var(--display); font-size: 20px; font-weight: 600; line-height: 1.2; }
+.ad .why { font-size: 13px; color: var(--ink-soft); }
+.ad.targeted .why { color: #8E2B26; font-weight: 700; }
+
+/* Banners */
+.overlay { position: absolute; inset: 0; background: rgba(43,26,14,.45); display: flex; align-items: flex-end; justify-content: center; padding: 16px; z-index: 5; }
+.overlay[hidden] { display: none; }
+.banner { background: #FFFFFF; color: var(--ink); width: 100%; max-width: 640px; border-radius: 18px; padding: 22px; box-shadow: 0 18px 50px rgba(0,0,0,.25); display: flex; flex-direction: column; gap: 14px; }
+.banner h3 { margin: 0; font-family: var(--display); font-weight: 600; font-size: 22px; }
+.banner p { margin: 0; }
+.banner .row { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn-eq { flex: 1 1 180px; border: 0; border-radius: 12px; padding: 13px 16px; background: var(--blue); color: #FFFFFF; font-weight: 800; font-size: 16px; }
+.btn-huge { width: 100%; border: 0; border-radius: 16px; padding: 22px; background: var(--trick-green); color: #FFFFFF; font-family: var(--display); font-weight: 700; font-size: 28px; letter-spacing: 1px; box-shadow: 0 6px 0 #178A39; }
+.tiny { align-self: flex-end; border: 0; background: none; color: #C7C7C7; font-size: 11px; padding: 2px; }
+.small-link { align-self: flex-start; border: 0; background: none; color: var(--blue); font-size: 14px; text-decoration: underline; padding: 0; }
+.choice { display: flex; gap: 12px; align-items: flex-start; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; }
+.choice input { width: 22px; height: 22px; margin-top: 2px; accent-color: var(--trick-green); flex: none; }
+.choice b { display: block; }
+.choice span { font-size: 14px; color: var(--ink-soft); }
+.choice.locked { background: #F6F6F6; }
+.purpose { font-size: 14px; color: var(--ink-soft); background: #F7F2EA; border-radius: 10px; padding: 10px 12px; }
+
+/* Monitor */
+.monitor { background: #2B1A0E; color: #F6EFE4; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 16px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); }
+@media (max-width: 900px) { .monitor { position: static; } }
+.mon-head { display: flex; gap: 12px; align-items: center; }
+.mon-head svg { flex: none; }
+.mon-head h2 { margin: 0; font-family: var(--display); font-weight: 600; font-size: 22px; }
+.mon-head p { margin: 0; font-size: 13px; color: #CDB9A2; }
+.mon-sec h3 { margin: 0 0 8px; font-size: 12px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase; color: #F2A65A; }
+.jar { display: flex; flex-direction: column; gap: 6px; }
+.cookie { display: flex; gap: 10px; align-items: center; background: #3D2817; border-radius: 10px; padding: 8px 10px; font-size: 14px; }
+.cookie .c { width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle at 30% 35%, #5A3416 2px, transparent 3px), radial-gradient(circle at 65% 60%, #5A3416 2px, transparent 3px), #C48C48; flex: none; }
+.cookie em { font-style: normal; margin-left: auto; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.need { background: #CFE8D3; color: #1E5A28; }
+.stat { background: #DCE7F6; color: #1E4E86; }
+.spy { background: #F8CFCB; color: #8E2B26; }
+.empty { font-size: 14px; color: #CDB9A2; }
+.profile { background: #F6EFE4; color: var(--ink); border-radius: 12px; padding: 12px 14px; border: 3px dashed var(--spy); }
+.profile b.t { font-family: var(--display); font-weight: 600; font-size: 18px; color: #8E2B26; display: block; margin-bottom: 4px; }
+.profile ul { margin: 0; padding-left: 20px; }
+.profile li { margin: 2px 0; }
+.profile.blind { border-color: var(--safe); }
+.profile.blind b.t { color: var(--safe); }
+.meter { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-variant-numeric: tabular-nums; }
+.meter div { background: #3D2817; border-radius: 10px; padding: 10px; }
+.meter b { font-family: var(--display); font-size: 28px; font-weight: 600; display: block; line-height: 1.1; }
+.meter span { font-size: 12px; color: #CDB9A2; }
+.say { background: #F2A65A; color: #2B1A0E; border-radius: 12px; padding: 12px 14px; font-weight: 700; font-size: 15px; }
+.switch { display: flex; gap: 10px; align-items: center; background: #3D2817; border-radius: 10px; padding: 10px; font-size: 14px; }
+.switch input { width: 20px; height: 20px; accent-color: #6FCF7F; flex: none; }
+
+.explain { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.explain h3 { margin: 0 0 6px; font-family: var(--display); font-weight: 600; font-size: 18px; }
+.explain p { margin: 0; color: var(--ink-soft); font-size: 15px; }
+.note { font-size: 13px; color: var(--ink-soft); text-align: center; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="lesson">
+    <div>
+      <h1>Shoppy <span>Cookie-Labor</span></h1>
+      <p>Probiere den Cookie-Banner aus, schau dir Skateboards an und surfe weiter. Rechts siehst du, was die Werbefirma Spähfix über dich mitbekommt.</p>
+    </div>
+    <div class="modes">
+      <span class="lbl" id="modeLbl">Banner</span>
+      <div class="seg" role="group" aria-labelledby="modeLbl">
+        <button type="button" id="mTrick" aria-pressed="true">Trick-Cookie</button>
+        <button type="button" id="mFair" aria-pressed="false">Fair-Cookie</button>
+      </div>
+      <button type="button" class="reset" id="reset">Neu starten</button>
+      <button type="button" class="reset eyebtn" id="toggleMon" aria-pressed="true" aria-controls="monitor" title="Taste M"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" fill="currentColor"/><path id="eyeSlash" d="M3 3l18 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" style="display:none"/></svg><span id="toggleLbl">Spähfix verbergen</span> <kbd>M</kbd></button>
+    </div>
+  </header>
+
+  <div class="grid">
+    <section class="browser" aria-label="Übungs-Browser">
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" data-site="shoppy" aria-selected="true"><span class="dot" style="background:#E07A1F"></span>Shoppy</button>
+        <button class="tab" role="tab" data-site="wetter" aria-selected="false"><span class="dot" style="background:#1F9AA8"></span>WetterWal</button>
+        <button class="tab" role="tab" data-site="spiele" aria-selected="false"><span class="dot" style="background:#2E6DB4"></span>SpieleKiste</button>
+        <button class="tab" role="tab" data-site="klick" aria-selected="false"><span class="dot" style="background:#C8453F"></span>KlickTube</button>
+      </div>
+      <div class="urlbar">
+        <div class="url" id="url">https://shoppy.example/skateboards</div>
+        <button type="button" class="gear" id="clearBtn">Cookies löschen</button>
+      </div>
+      <div class="viewport">
+        <!-- Shoppy -->
+        <div class="site" id="site-shoppy">
+          <div class="shop-head">
+            <div class="logo">Shoppy<small>Skateboards aus Hamburg</small></div>
+            <div class="cartpill" id="cart">Warenkorb: 0</div>
+          </div>
+          <div class="boards" id="boards"></div>
+          <div class="shop-foot">
+            <span>Shoppy ist ein erfundener Übungs-Shop. Hier kann man nichts kaufen.</span>
+            <button type="button" class="linkbtn" id="reopen">Cookie-Einstellungen ändern</button>
+          </div>
+        </div>
+        <!-- WetterWal -->
+        <div class="site" id="site-wetter" hidden>
+          <h2>WetterWal</h2>
+          <p class="sub">Das Wetter für deinen Stadtteil</p>
+          <div class="split">
+            <div class="panel">
+              <label for="district" style="font-weight:700">Stadtteil: </label>
+              <select id="district">
+                <option value="">bitte wählen</option>
+                <option>Barmbek</option><option>Winterhude</option><option>Altona</option><option>Wilhelmsburg</option><option>Bergedorf</option><option>Eimsbüttel</option>
+              </select>
+              <div class="weather" style="margin-top:14px">
+                <div class="temp" id="temp">13°</div>
+                <div><b id="wtxt">Wolkig, später trocken</b><br><span style="color:var(--ink-soft)">Gut zum Skaten ab 15 Uhr</span></div>
+              </div>
+              <div class="forecast">
+                <div><small>Fr</small>14°</div><div><small>Sa</small>16°</div><div><small>So</small>12°</div><div><small>Mo</small>11°</div>
+              </div>
+            </div>
+            <div class="ad" data-ad></div>
+          </div>
+        </div>
+        <!-- SpieleKiste -->
+        <div class="site" id="site-spiele" hidden>
+          <h2>SpieleKiste</h2>
+          <p class="sub">Tippe ein Spiel an</p>
+          <div class="split">
+            <div class="games" id="games"></div>
+            <div class="ad" data-ad></div>
+          </div>
+        </div>
+        <!-- KlickTube -->
+        <div class="site" id="site-klick" hidden>
+          <h2>KlickTube</h2>
+          <p class="sub">Tippe ein Video an</p>
+          <div class="split">
+            <div class="videos" id="videos"></div>
+            <div class="ad" data-ad></div>
+          </div>
+        </div>
+
+        <div class="overlay" id="overlay" hidden>
+          <div class="banner" id="banner" role="dialog" aria-modal="true" aria-labelledby="bTitle"></div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="monitor" id="monitor" aria-label="Spähfix-Monitor">
+      <div class="mon-head">
+        <svg width="46" height="46" viewBox="0 0 46 46" aria-hidden="true"><circle cx="23" cy="24" r="20" fill="#C48C48" stroke="#7A4E23" stroke-width="2"/><circle cx="15" cy="13" r="2.5" fill="#5A3416"/><circle cx="33" cy="35" r="2.5" fill="#5A3416"/><circle cx="12" cy="30" r="2" fill="#5A3416"/><ellipse cx="16" cy="22" rx="5" ry="5.5" fill="#FFF"/><ellipse cx="30" cy="22" rx="5" ry="5.5" fill="#FFF"/><circle cx="18" cy="23" r="2.4" fill="#2B1A0E"/><circle cx="32" cy="23" r="2.4" fill="#2B1A0E"/><path d="M17 31 Q23 28 29 32" stroke="#5A2810" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>
+        <div><h2>Spähfix-Monitor</h2><p>Was im Hintergrund passiert</p></div>
+      </div>
+      <div class="say" id="say">Öffne Shoppy und entscheide dich beim Cookie-Banner.</div>
+      <div class="mon-sec">
+        <h3>Cookies in deinem Browser</h3>
+        <div class="jar" id="jar"></div>
+      </div>
+      <div class="mon-sec">
+        <h3>Spähfix-Steckbrief</h3>
+        <div id="profile"></div>
+      </div>
+      <div class="mon-sec">
+        <h3>Klicks gezählt</h3>
+        <div class="meter">
+          <div><b id="kDecide">0</b><span>Klicks bis zur Banner-Entscheidung</span></div>
+          <div><b id="kSeen">0</b><span>Dinge, die Spähfix notiert hat</span></div>
+        </div>
+      </div>
+      <label class="switch" for="block"><input type="checkbox" id="block"> <span><b>iPad-Schalter:</b> Websiteübergreifendes Tracking verhindern</span></label>
+    </aside>
+  </div>
+
+  <section class="explain" aria-label="Was du hier lernst">
+    <div><h3>Notwendiger Cookie</h3><p>Shoppy merkt sich deinen Warenkorb. Dafür braucht die Seite keine Erlaubnis. Er bleibt bei Shoppy.</p></div>
+    <div><h3>Spähfix-Cookie</h3><p>Die Werbefirma liest denselben Cookie auf WetterWal, SpieleKiste und KlickTube wieder. So wächst der Steckbrief.</p></div>
+    <div><h3>Fairer Banner</h3><p>Zwei gleich große Knöpfe, keine vorab gesetzten Häkchen, und er sagt, wer was wie lange speichert.</p></div>
+  </section>
+  <p class="note">Alle Namen sind erfunden. Diese Seite speichert nichts und schickt nichts weg.</p>
+</div>
+
+<script>
+(() => {
+  const BOARDS = [
+    { id: 'flamme', name: 'Blaue Flamme', price: 89, bg: 'linear-gradient(90deg,#1E4E86,#2E6DB4 45%,#F28C28 70%,#E0451F)' },
+    { id: 'kran', name: 'Hafenkran', price: 69, bg: 'repeating-linear-gradient(135deg,#F2B632 0 14px,#2B1A0E 14px 28px)' },
+    { id: 'welle', name: 'Elbwelle', price: 79, bg: 'linear-gradient(90deg,#1F9AA8,#7FD3D9 50%,#1F9AA8)' },
+    { id: 'kiez', name: 'Kiez-Kreuzer', price: 99, bg: 'linear-gradient(90deg,#7B4FA0,#E05A9C)' },
+    { id: 'moewe', name: 'Möwe Mini', price: 59, bg: 'linear-gradient(90deg,#F6EFE4,#FFFFFF 50%,#BFC7CF)' },
+    { id: 'falke', name: 'Nachtfalke', price: 109, bg: 'linear-gradient(90deg,#14141F,#3A3A5C 60%,#C8453F)' },
+  ];
+  const GAMES = [['Bauwelt', '#2E6DB4', 'Bauspiele'], ['Turbo-Rennen', '#C8453F', 'Rennspiele'], ['Tierpension', '#2E7D3A', 'Tierspiele'], ['Fußball-Manager', '#A9530C', 'Fußball']];
+  const VIDEOS = [['Kickflip lernen', '#2B1A0E', 'Skate-Tricks'], ['Lustige Katzen', '#7B4FA0', 'Katzenvideos'], ['Tore der Woche', '#2E7D3A', 'Fußball'], ['Pizza backen', '#E07A1F', 'Kochen']];
+  const URLS = { shoppy: 'https://shoppy.example/skateboards', wetter: 'https://wetterwal.example/hamburg', spiele: 'https://spielekiste.example', klick: 'https://klicktube.example' };
+  const SITE_NAMES = { shoppy: 'Shoppy', wetter: 'WetterWal', spiele: 'SpieleKiste', klick: 'KlickTube' };
+
+  const $ = (id) => document.getElementById(id);
+  let S;
+  function fresh(mode) {
+    return { mode, consent: null, ads: false, stats: false, clicks: 0, shopVisited: false, seen: [], district: '', interests: [], sites: [], cart: 0, site: 'shoppy', log: [] };
+  }
+  S = fresh('trick');
+
+  const tracking = () => S.ads && !$('block').checked;
+
+  function note(text) { if (!tracking()) return; if (!S.log.includes(text)) S.log.push(text); }
+
+  // ---------- Shop ----------
+  function renderBoards() {
+    $('boards').innerHTML = BOARDS.map(b => `
+      <button type="button" class="board ${S.seen.includes(b.id) ? 'seen' : ''}" data-board="${b.id}">
+        <div class="deck" style="background:${b.bg}"></div>
+        <b>${b.name}</b>
+        <span class="price">${b.price} €</span>
+        <span class="hint">${S.seen.includes(b.id) ? 'angeschaut' : 'Antippen zum Anschauen'}</span>
+      </button>`).join('');
+  }
+  $('boards').addEventListener('click', (e) => {
+    const el = e.target.closest('[data-board]'); if (!el) return;
+    if (S.consent === null) { openBanner(); return; }
+    const b = BOARDS.find(x => x.id === el.dataset.board);
+    if (!S.seen.includes(b.id)) S.seen.push(b.id);
+    S.cart = S.seen.length;
+    note(`schaut Skateboard „${b.name}“ an (${b.price} €)`);
+    say(tracking() ? `Spähfix hat notiert: „${b.name}“. Wechsle mal zu WetterWal!` : `Du schaust „${b.name}“ an. Spähfix bekommt davon nichts mit.`);
+    renderAll();
+  });
+
+  // ---------- Banner ----------
+  function openBanner(settings) {
+    $('overlay').hidden = false;
+    const B = $('banner');
+    if (S.mode === 'fair') {
+      if (!settings) {
+        B.innerHTML = `
+          <h3 id="bTitle">Cookies auf Shoppy</h3>
+          <p>Notwendige Cookies brauchen wir für den Warenkorb. Mit deiner Erlaubnis speichert unser Werbepartner Spähfix 12 Monate lang, was du dir ansiehst, und zeigt dir auf anderen Seiten passende Werbung.</p>
+          <div class="row">
+            <button type="button" class="btn-eq" data-act="all">Alle akzeptieren</button>
+            <button type="button" class="btn-eq" data-act="need">Nur notwendige</button>
+          </div>
+          <button type="button" class="small-link" data-act="settings">Einzeln auswählen</button>`;
+      } else {
+        B.innerHTML = `
+          <h3 id="bTitle">Cookies einzeln auswählen</h3>
+          ${choices(false)}
+          <div class="row">
+            <button type="button" class="btn-eq" data-act="save">Auswahl speichern</button>
+            <button type="button" class="btn-eq" data-act="all">Alle akzeptieren</button>
+          </div>`;
+      }
+    } else {
+      if (!settings) {
+        B.innerHTML = `
+          <h3 id="bTitle">Für dein bestes Erlebnis!</h3>
+          <p style="color:var(--ink-soft)">Viel Spaß beim Shoppen :)</p>
+          <button type="button" class="btn-huge" data-act="all">ALLE AKZEPTIEREN</button>
+          <button type="button" class="tiny" data-act="settings">Einstellungen</button>`;
+      } else {
+        B.innerHTML = `
+          <h3 id="bTitle">Deine Privatsphäre ist uns wichtig</h3>
+          ${choices(true)}
+          <button type="button" class="btn-huge" data-act="all">ALLE AKZEPTIEREN</button>
+          <button type="button" class="tiny" data-act="save" style="color:#9A9A9A">Auswahl speichern</button>`;
+      }
+    }
+    const first = B.querySelector('button'); if (first) first.focus();
+  }
+  function choices(prechecked) {
+    const c = prechecked ? 'checked' : '';
+    return `
+      <label class="choice locked"><input type="checkbox" checked disabled><span><b>Notwendig</b>Warenkorb und Login. Immer an.</span></label>
+      <label class="choice" for="cStat"><input type="checkbox" id="cStat" ${c}><span><b>Statistik</b>Shoppy zählt, welche Seiten oft besucht werden.</span></label>
+      <label class="choice" for="cAds"><input type="checkbox" id="cAds" ${c}><span><b>Werbung (Spähfix)</b>Merkt sich 12 Monate, was du anschaust, auch auf anderen Seiten.</span></label>
+      ${prechecked ? '' : '<p class="purpose">Wer? Shoppy und Spähfix. Wozu? Warenkorb, Statistik, Werbung. Wie lange? Bis zu 12 Monate.</p>'}`;
+  }
+  $('banner').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-act]');
+    if (!btn) return;
+    S.clicks++;
+    const act = btn.dataset.act;
+    if (act === 'settings') { openBanner(true); renderMeter(); return; }
+    if (act === 'all') decide(true, true, 'all');
+    else if (act === 'need') decide(false, false, 'need');
+    else if (act === 'save') decide($('cAds').checked, $('cStat').checked, 'custom');
+  });
+  $('banner').addEventListener('change', () => { S.clicks++; renderMeter(); });
+
+  function decide(ads, stats, how) {
+    S.consent = how; S.ads = ads; S.stats = stats;
+    $('overlay').hidden = true;
+    if (ads) { note('wohnt wohl in Hamburg'); note('ist gerade online (Shoppy)'); }
+    const n = S.clicks;
+    if (ads) say(`${n} Klick${n === 1 ? '' : 's'} – und Spähfix darf mitlesen. Schau dir ein paar Skateboards an!`);
+    else say(`Abgelehnt mit ${n} Klick${n === 1 ? '' : 's'}. ${S.mode === 'trick' ? 'Beim Trick-Cookie war das ganz schön versteckt.' : 'Beim Fair-Cookie ging das genauso leicht wie Annehmen.'}`);
+    renderAll();
+  }
+  $('reopen').addEventListener('click', () => { S.clicks = 0; S.consent = null; openBanner(); renderAll(); say('Du kannst deine Entscheidung jederzeit ändern. Das muss ein fairer Shop erlauben.'); });
+
+  // ---------- Other sites ----------
+  const GAME_ART = {
+    'Bauwelt': '<rect x="18" y="50" width="40" height="22" rx="3" fill="#F2B632"/><rect x="62" y="50" width="40" height="22" rx="3" fill="#E0451F"/><rect x="40" y="26" width="40" height="22" rx="3" fill="#FFFFFF"/><g fill="#FFFFFF" opacity=".55"><rect x="24" y="45" width="9" height="5" rx="1.5"/><rect x="43" y="45" width="9" height="5" rx="1.5"/><rect x="68" y="45" width="9" height="5" rx="1.5"/><rect x="87" y="45" width="9" height="5" rx="1.5"/></g><g fill="#D9E4F2"><rect x="46" y="21" width="9" height="5" rx="1.5"/><rect x="65" y="21" width="9" height="5" rx="1.5"/></g><rect x="52" y="2" width="16" height="20" rx="2" fill="#3FA34D" transform="rotate(12 60 12)"/>',
+    'Turbo-Rennen': '<g stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" opacity=".7"><path d="M6 34h18"/><path d="M2 44h20"/><path d="M8 54h14"/></g><path d="M28 56 L34 40 Q38 32 48 31 L70 30 Q78 30 84 36 L92 42 Q106 43 110 50 L112 56 Z" fill="#F2B632"/><path d="M50 34 L68 33 Q74 33 79 38 L50 39 Z" fill="#BFE3F2"/><rect x="28" y="52" width="84" height="6" rx="3" fill="#2B1A0E" opacity=".35"/><circle cx="46" cy="58" r="9" fill="#2B1A0E"/><circle cx="46" cy="58" r="4" fill="#C9C9C9"/><circle cx="96" cy="58" r="9" fill="#2B1A0E"/><circle cx="96" cy="58" r="4" fill="#C9C9C9"/><text x="60" y="50" font-size="10" font-weight="700" fill="#2B1A0E" font-family="Verdana, sans-serif">7</text>',
+    'Tierpension': '<path d="M22 72 V40 L44 22 L66 40 V72 Z" fill="#F6EFE4"/><path d="M18 42 L44 18 L70 42" fill="none" stroke="#A9530C" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><rect x="36" y="52" width="16" height="20" rx="8" fill="#2B1A0E" opacity=".75"/><g transform="translate(86 46)"><path d="M-20 -8 L-16 -26 L-6 -14 Z" fill="#F2A65A"/><path d="M20 -8 L16 -26 L6 -14 Z" fill="#F2A65A"/><circle r="20" fill="#F2A65A"/><circle cx="-7" cy="-3" r="3" fill="#2B1A0E"/><circle cx="7" cy="-3" r="3" fill="#2B1A0E"/><path d="M-3 5 L3 5 L0 9 Z" fill="#C8453F"/><g stroke="#2B1A0E" stroke-width="1.5" stroke-linecap="round"><path d="M-6 8 L-20 5"/><path d="M-6 10 L-20 12"/><path d="M6 8 L20 5"/><path d="M6 10 L20 12"/></g></g>',
+    'Fußball-Manager': '<rect x="0" y="58" width="120" height="14" fill="#3FA34D"/><path d="M74 58 V14 H114 V58" fill="none" stroke="#FFFFFF" stroke-width="4"/><g stroke="#FFFFFF" stroke-width="1" opacity=".5"><path d="M82 14 V58 M90 14 V58 M98 14 V58 M106 14 V58 M74 24 H114 M74 34 H114 M74 44 H114"/></g><circle cx="40" cy="42" r="18" fill="#FFFFFF"/><path d="M40 33 L48 39 L45 48 L35 48 L32 39 Z" fill="#2B1A0E"/><g stroke="#2B1A0E" stroke-width="2"><path d="M40 33 V25"/><path d="M48 39 L56 36"/><path d="M45 48 L50 56"/><path d="M35 48 L30 56"/><path d="M32 39 L24 36"/></g>'
+  };
+  $('games').innerHTML = GAMES.map(([n, c, t]) => `<button type="button" class="tile game" style="background:${c}" data-int="${t}" data-name="${n}"><svg viewBox="0 0 120 72" preserveAspectRatio="xMidYMid meet" aria-hidden="true">${GAME_ART[n]}</svg><span>${n}</span></button>`).join('');
+  const VIDEO_ART = {
+    'Kickflip lernen': ['2:48', '<path d="M0 72 Q40 72 60 50 L60 72 Z" fill="#F6EFE4" opacity=".35"/><g transform="rotate(-18 72 30)"><rect x="44" y="24" width="56" height="10" rx="5" fill="#2E6DB4"/><rect x="50" y="26" width="44" height="3" rx="1.5" fill="#F28C28"/><circle cx="56" cy="38" r="4" fill="#F6EFE4"/><circle cx="88" cy="38" r="4" fill="#F6EFE4"/></g><g fill="none" stroke="#F6EFE4" stroke-width="2.5" stroke-linecap="round" opacity=".8"><path d="M38 16 Q46 6 58 8"/><path d="M104 44 Q110 52 106 60"/></g>'],
+    'Lustige Katzen': ['1:05', '<circle cx="92" cy="52" r="11" fill="#E05A9C"/><path d="M84 46 Q92 56 100 46 M83 54 Q92 62 101 54" fill="none" stroke="#F6EFE4" stroke-width="1.5"/><path d="M100 60 Q112 66 116 58" fill="none" stroke="#E05A9C" stroke-width="2"/><g transform="translate(46 42)"><path d="M-20 -8 L-16 -26 L-6 -14 Z" fill="#BFC7CF"/><path d="M20 -8 L16 -26 L6 -14 Z" fill="#BFC7CF"/><circle r="20" fill="#BFC7CF"/><path d="M-12 -2 Q-7 -7 -2 -2" fill="none" stroke="#2B1A0E" stroke-width="2.5" stroke-linecap="round"/><path d="M2 -2 Q7 -7 12 -2" fill="none" stroke="#2B1A0E" stroke-width="2.5" stroke-linecap="round"/><path d="M-3 5 L3 5 L0 8 Z" fill="#E05A9C"/><path d="M-6 10 Q0 15 6 10" fill="none" stroke="#2B1A0E" stroke-width="1.8" stroke-linecap="round"/><g stroke="#2B1A0E" stroke-width="1.2" stroke-linecap="round"><path d="M-6 7 L-20 4"/><path d="M6 7 L20 4"/></g></g>'],
+    'Tore der Woche': ['4:30', '<rect x="0" y="60" width="120" height="12" fill="#5CC46B"/><path d="M14 60 V16 H62 V60" fill="none" stroke="#FFFFFF" stroke-width="4"/><g stroke="#FFFFFF" stroke-width="1" opacity=".5"><path d="M24 16 V60 M34 16 V60 M44 16 V60 M54 16 V60 M14 26 H62 M14 36 H62 M14 46 H62"/></g><circle cx="44" cy="34" r="9" fill="#FFFFFF"/><path d="M44 29 L48 32 L46.5 37 L41.5 37 L40 32 Z" fill="#2B1A0E"/><g stroke="#F6EFE4" stroke-width="2.5" stroke-linecap="round" opacity=".8"><path d="M60 30 H80"/><path d="M62 38 H90"/><path d="M64 46 H78"/></g><text x="72" y="57" font-size="13" font-weight="700" fill="#F2B632" font-family="Verdana, sans-serif">TOR!</text>'],
+    'Pizza backen': ['6:12', '<circle cx="60" cy="38" r="28" fill="#E8B04B"/><circle cx="60" cy="38" r="23" fill="#D9472B"/><g fill="#F6E7B8"><circle cx="50" cy="30" r="5"/><circle cx="68" cy="46" r="6"/><circle cx="64" cy="27" r="4"/><circle cx="48" cy="46" r="4"/></g><g fill="#8E1F17"><circle cx="58" cy="38" r="4.5"/><circle cx="72" cy="34" r="4"/><circle cx="54" cy="52" r="3.5"/><circle cx="44" cy="38" r="3.5"/></g><g fill="#3FA34D"><ellipse cx="66" cy="38" rx="3" ry="1.6"/><ellipse cx="52" cy="24" rx="3" ry="1.6"/></g><path d="M60 38 L60 10 M60 38 L84 52 M60 38 L36 52" stroke="#E8B04B" stroke-width="1.5" opacity=".7"/>']
+  };
+  const playBadge = (dur) => `<circle cx="104" cy="14" r="9" fill="rgba(0,0,0,.55)"/><path d="M101 9.5 L109 14 L101 18.5 Z" fill="#FFFFFF"/><rect x="2" y="56" width="28" height="13" rx="3" fill="rgba(0,0,0,.6)"/><text x="16" y="66" text-anchor="middle" font-size="9" font-weight="700" fill="#FFFFFF" font-family="Verdana, sans-serif">${dur}</text>`;
+  $('videos').innerHTML = VIDEOS.map(([n, c, t]) => `<button type="button" class="tile game" style="background:${c}" data-int="${t}" data-name="${n}"><svg viewBox="0 0 120 72" preserveAspectRatio="xMidYMid meet" aria-hidden="true">${VIDEO_ART[n][1]}${playBadge(VIDEO_ART[n][0])}</svg><span>${n}</span></button>`).join('');
+  document.querySelectorAll('.games, .videos').forEach(g => g.addEventListener('click', (e) => {
+    const t = e.target.closest('.tile'); if (!t) return;
+    t.classList.add('on');
+    const where = S.site === 'spiele' ? 'spielt' : 'mag';
+    if (!S.interests.includes(t.dataset.int)) S.interests.push(t.dataset.int);
+    note(`${where} ${t.dataset.int}`);
+    say(tracking() ? `Spähfix sitzt auch hier und notiert: ${t.dataset.int}.` : `Du klickst „${t.dataset.name}“. Spähfix weiß nicht, wer du bist.`);
+    renderAll();
+  }));
+  $('district').addEventListener('change', (e) => {
+    S.district = e.target.value;
+    if (S.district) { note(`wohnt wohl in Hamburg-${S.district}`); say(tracking() ? `Schon die Wetter-Abfrage verrät: Hamburg-${S.district}.` : `Wetter für ${S.district}. Spähfix sieht nur „unbekannt“.`); }
+    $('temp').textContent = S.district ? (10 + (S.district.length % 6)) + '°' : '13°';
+    renderAll();
+  });
+
+  function renderAds() {
+    const last = BOARDS.find(b => b.id === S.seen[S.seen.length - 1]);
+    document.querySelectorAll('[data-ad]').forEach(ad => {
+      if (tracking() && last) {
+        ad.className = 'ad targeted';
+        ad.innerHTML = `<span class="tag">Anzeige<span class="spytag"> · Spähfix</span></span>
+          <div class="deck" style="background:${last.bg};height:40px"></div>
+          <strong>Nur heute! „${last.name}“ für ${last.price} € ${S.district ? 'in Hamburg-' + S.district : 'in Hamburg'} abholen!</strong>
+          <span class="why">Warum sehe ich das? Spähfix hat deinen Cookie von Shoppy wiedererkannt.</span>`;
+      } else {
+        ad.className = 'ad';
+        ad.innerHTML = `<span class="tag">Anzeige</span>
+          <strong>Strahleweiß Zahnpasta – für ein Lächeln wie frisch geputzt</strong>
+          <span class="why">${S.seen.length ? 'Allgemeine Werbung: Diese Seite weiß nichts über dich.' : 'Allgemeine Werbung für alle.'}</span>`;
+      }
+    });
+  }
+
+  // ---------- Tabs ----------
+  document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => go(t.dataset.site)));
+  function go(site) {
+    S.site = site;
+    document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', t.dataset.site === site));
+    ['shoppy', 'wetter', 'spiele', 'klick'].forEach(s => $('site-' + s).hidden = s !== site);
+    $('url').textContent = URLS[site];
+    if (site === 'shoppy') {
+      if (!S.shopVisited) S.shopVisited = true;
+      if (S.consent === null) openBanner();
+    } else {
+      $('overlay').hidden = true;
+      if (!S.sites.includes(site)) S.sites.push(site);
+      note(`besucht ${SITE_NAMES[site]}`);
+      if (S.consent === null) say('Du hast den Banner noch nicht beantwortet. Geh zurück zu Shoppy.');
+      else if (tracking() && S.seen.length) say(`Achtung: Auf ${SITE_NAMES[site]} siehst du Werbung für dein Skateboard!`);
+      else if (!tracking()) say(`${SITE_NAMES[site]} zeigt dir allgemeine Werbung. Spähfix kennt dich hier nicht.`);
+    }
+    renderAll();
+  }
+
+  // ---------- Monitor ----------
+  function say(t) { $('say').textContent = t; }
+  function renderJar() {
+    const rows = [];
+    if (S.consent !== null) rows.push(['Shoppy · Warenkorb', 'notwendig', 'need']);
+    if (S.consent !== null && S.stats) rows.push(['Shoppy · Statistik', 'Statistik', 'stat']);
+    if (S.consent !== null && S.ads) rows.push(['Spähfix · Nr. 4711', $('block').checked ? 'blockiert' : 'Tracking', 'spy']);
+    $('jar').innerHTML = rows.length
+      ? rows.map(([n, l, c]) => `<div class="cookie"><span class="c"></span>${n}<em class="${c}">${l}</em></div>`).join('')
+      : '<p class="empty">Noch keine Cookies. Öffne Shoppy.</p>';
+  }
+  function renderProfile() {
+    const P = $('profile');
+    if (S.consent === null) { P.innerHTML = '<p class="empty">Noch nichts. Erst kommt der Cookie-Banner.</p>'; return; }
+    if (!S.ads) { P.innerHTML = `<div class="profile blind"><b class="t">Steckbrief: unbekannt</b>Du hast Spähfix abgelehnt. Die Werbefirma bekommt keine Cookie-Nummer und kann dich auf anderen Seiten nicht wiedererkennen.</div>`; return; }
+    if ($('block').checked && !S.log.length) { P.innerHTML = `<div class="profile blind"><b class="t">Steckbrief: blockiert</b>Der iPad-Schalter verhindert, dass Spähfix dich über Seiten hinweg verfolgt.</div>`; return; }
+    P.innerHTML = `<div class="profile"><b class="t">Cookie Nr. 4711</b><ul>${S.log.map(l => `<li>${l}</li>`).join('')}</ul>${$('block').checked ? '<p style="margin:8px 0 0;color:var(--safe);font-weight:700">Ab jetzt blockiert. Alte Einträge bleiben, bis du die Cookies löschst.</p>' : ''}</div>`;
+  }
+  function renderMeter() { $('kDecide').textContent = S.consent === null && S.clicks === 0 ? '–' : S.clicks; $('kSeen').textContent = S.log.length; }
+  function renderAll() { renderBoards(); renderAds(); renderJar(); renderProfile(); renderMeter(); $('cart').textContent = 'Angeschaut: ' + S.seen.length; }
+
+  $('block').addEventListener('change', () => {
+    say($('block').checked ? 'Schalter an: Spähfix kann dich nicht mehr über Seiten hinweg verfolgen.' : 'Schalter aus: Spähfix darf wieder mitlesen, wenn du zugestimmt hast.');
+    renderAll();
+  });
+  $('clearBtn').addEventListener('click', () => {
+    const mode = S.mode, site = S.site;
+    S = fresh(mode); S.site = site;
+    $('district').value = '';
+    document.querySelectorAll('.tile.on').forEach(t => t.classList.remove('on'));
+    say('Alle Cookies gelöscht. Spähfix hat seinen Steckbrief verloren. Beim nächsten Shoppy-Besuch fragt der Banner neu.');
+    go(site);
+  });
+
+  // ---------- Modes ----------
+  function setMode(m) {
+    $('mTrick').setAttribute('aria-pressed', m === 'trick');
+    $('mFair').setAttribute('aria-pressed', m === 'fair');
+    S = fresh(m); $('block').checked = false; $('district').value = '';
+    document.querySelectorAll('.tile.on').forEach(t => t.classList.remove('on'));
+    say(m === 'trick' ? 'Trick-Cookie: Versuch mal, Spähfix abzulehnen. Wie viele Klicks brauchst du?' : 'Fair-Cookie: Vergleiche, wie leicht Ablehnen hier ist.');
+    go('shoppy');
+  }
+  $('mTrick').addEventListener('click', () => setMode('trick'));
+  $('mFair').addEventListener('click', () => setMode('fair'));
+  $('reset').addEventListener('click', () => setMode(S.mode));
+
+  // ---------- Monitor zeigen / verbergen ----------
+  function setMonitor(show) {
+    $('monitor').hidden = !show;
+    document.querySelector('.grid').classList.toggle('solo', !show);
+    $('toggleMon').setAttribute('aria-pressed', show);
+    $('toggleLbl').textContent = show ? 'Spähfix verbergen' : 'Spähfix zeigen';
+    $('eyeSlash').style.display = show ? 'none' : '';
+    document.body.classList.toggle('stealth', !show);
+  }
+  $('toggleMon').addEventListener('click', () => setMonitor($('monitor').hidden));
+  document.addEventListener('keydown', (e) => {
+    if ((e.key === 'm' || e.key === 'M') && !e.ctrlKey && !e.metaKey && !e.altKey && !/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) setMonitor($('monitor').hidden);
+  });
+
+  setMode('trick');
+})();
+</script>
+
+</body></html>
